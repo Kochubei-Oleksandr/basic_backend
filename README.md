@@ -77,3 +77,49 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+# Stages of creating a structure:
+* Проектируем базу данных под требования заказчика и с возможностью исспользовать наши архитектурные решения
+
+____________________________________________________________
+
+1) установка проекта composer create-project --prefer-dist laravel/laravel PROJECT_NAME / конфигурируем .env файл, подключаем БД.
+2) введение команды php artisan key:generate
+3) добавление базовых роутов
+4) добавить Requests (BaseApiRequest, LoginRequest, MessageRequest, RegisterRequest, UserRequest)
+5) установить версию php от 7.4 в файле composer.json
+6) установить пакет jwt авторизации (composer require tymon/jwt-auth и https://jwt-auth.readthedocs.io/en/docs/laravel-installation/) и настроить его
+7) создали базовые контроллеры (BaseController, BaseAuthController) 
+8) создали базовые модели и их реализацию в трейтах (CoreBaseModelTrait, BaseModelTrait, BaseModel)
+9) создание основных моделей (User, Language)
+10) добавление middleware для проекта (JWTAuth, ModifyHeaders, SetLanguage)
+11) Создание базовых сервисов (MessageService)
+12) RouteServiceProvider -> mapApiRoutes - убираем прификс prefix('api')
+13) Создание миграций и сидов со статическими данными бэкенда (languages.sql, CreateLanguagesTable, CreateUsersTable, DatabaseSeeder, LanguagesSeeder)
+14) написание тестов API под текущую логику 
+15) выполнить composer dump-autoload для подтягивание не индексируемых файлов
+16) в $routeMiddleware подключить ('jwt-auth' => JWTAuth::class, 'language' => SetLanguage::class)
+17) скоректировать guards в auth.php
+
+Основные правила работы над проектом:
+1) Исспользуем существующую архитектуру для проектов компании
+2) Особое внимание уделяем таблицам с переводами, базовым моделям и контроллерам
+4) Исспользуем техники написания надежного и правильно оформленного кода, ниже основные из них...
+
+Правила для оформления кода:
+https://habr.com/ru/company/mailru/blog/336788/
+https://laravel.ru/posts/864
+https://laravel.ru/posts/147
+
+Руководство по разработке:
+1) Пишем API тесты прежде, чем начали реализовывать бизнес логику. На выходе должны получить список входных и выходных данных
+2) Пишем реализацию валидаций в Requests под новый контроллер или редактируем старые.
+3) Создаем только новые миграции (НЕ изменять старые) и создаем или редактируем сиды.
+4) Создаем или редактируем модель данных при необходимости на основании инфы после создания тестов
+5) создаем контроллер для выполнения запроса (внутри него только обращение к модели и вывод результата, никакой бизнес логики).
+Максимально исспользуем функционал базового контроллера.
+6) При необходимости переопределяем функции базовой модели в самой модели, куда поступают данные с контроллера
+7) Пишем роуты для взаимодействия с контроллером
+8) Выносим всю повторяющуюся или большые куски кода бизнес логики в отдельные сервисы
+9) Корректируем тесты при необходимости, тестируем.
